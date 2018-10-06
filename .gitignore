@@ -7,6 +7,10 @@ __pycache__/
 *.so
 
 # Distribution / packaging
+.idea
+.idea/
+idea/
+idea
 .Python
 build/
 develop-eggs/
@@ -23,6 +27,7 @@ wheels/
 *.egg-info/
 .installed.cfg
 *.egg
+
 MANIFEST
 
 # PyInstaller
@@ -102,3 +107,12 @@ venv.bak/
 
 # mypy
 .mypy_cache/
+
+# big data
+data/
+data/*
+resources/
+resources/*
+files/
+.mypy_cache/
+.DS_Store
