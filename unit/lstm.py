@@ -15,7 +15,7 @@ from keras.models import Sequential, load_model
 from keras.preprocessing import sequence
 from sklearn.model_selection import train_test_split
 
-from defaults import *
+from unit.defaults import *
 
 
 def filter_data(full_path):
@@ -265,3 +265,7 @@ def lstm():
         result = model.predict(X_interactive)
         print(' - : ', str(round(result[0][0] * 100, 4)) + '%')
         print(' + : ', str(round(result[0][1] * 100, 4)) + '%', '\n')
+
+
+if __name__ == '__main__':
+    lstm()

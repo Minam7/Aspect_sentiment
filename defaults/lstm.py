@@ -11,7 +11,7 @@ import numpy as np
 from hazm import word_tokenize, Normalizer
 from sklearn.model_selection import train_test_split
 
-from defaults import *
+from unit.defaults import *
 
 parser = argparse.ArgumentParser(prog='digikala-sentiment-lstm')
 
