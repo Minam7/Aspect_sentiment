@@ -1,15 +1,15 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+import argparse
 import json
+import logging
+import pickle
 import random
 import re
-import pickle
-import argparse
-import logging
 
 import numpy as np
-from sklearn.model_selection import train_test_split
 from hazm import word_tokenize, Normalizer
+from sklearn.model_selection import train_test_split
 
 from defaults import *
 
