@@ -1,41 +1,32 @@
-
-#!/usr/bin/python
+# !/usr/bin/python
 # -*- coding: utf-8 -*-
 
-#-------------------------------------------------------------------------------------------#
-#       author: BinhDT                                                                      #
-#       description: preprocess data like exporting aspect, word2vec, load embedding        #
-#       prepare data for training                                                           #
-#       last update on 27/7/2017                                                            #
-#-------------------------------------------------------------------------------------------#
-
-import numpy as np
+import codecs
 import os
 import re
-import csv
-from collections import Counter
-import codecs
-from collections import defaultdict
 import xml.etree.ElementTree as ET
-import json
+from collections import defaultdict
 
+import numpy as np
 
 
 def load_embedding(domain, data_dir, flag_addition_corpus, flag_word2vec, flag_use_sentiment_embedding):
     word_dict = dict()
     embedding = list()
 
-    if (flag_addition_corpus):
+    if flag_addition_corpus:
         # fix it if you want to add more data for word2vec training
-        continue
-        
-    if (flag_word2vec):
-        os.system('cd ../fastText && ./fasttext cbow -input ../data/' + domain + '_corpus_for_word2vec.txt -output ../data/' + domain + '_cbow_final_2014 -dim 100 -minCount 0 -epoch 2000')
-    
+        # TODO
+        pass
+
+    if flag_word2vec:
+        os.system(
+            'cd ../fastText && ./fasttext cbow -input ../data/' + domain + '_corpus_for_word2vec.txt -output ../data/' + domain + '_cbow_final_2014 -dim 100 -minCount 0 -epoch 2000')
+
     sswe = defaultdict(list)
-    if (flag_use_sentiment_embedding):
+    if flag_use_sentiment_embedding:
         f_se = codecs.open('../dictionary/sswe-u.txt', 'r', 'utf-8')
-        
+
         for line in f_se:
             elements = line.split()
             for i in range(1, len(elements)):
@@ -51,7 +42,7 @@ def load_embedding(domain, data_dir, flag_addition_corpus, flag_word2vec, flag_u
         else:
             component = line.strip().split(' ')
             word_dict[component[0].lower()] = idx
-            if (flag_use_sentiment_embedding and component[0].lower() in sswe.keys()):
+            if flag_use_sentiment_embedding and component[0].lower() in sswe.keys():
                 embedding.append(sswe[component[0].lower()])
             else:
                 word_vec = list()
@@ -62,7 +53,7 @@ def load_embedding(domain, data_dir, flag_addition_corpus, flag_word2vec, flag_u
     f_vec.close()
     word_dict['<padding>'] = idx
     embedding.append([0.] * len(embedding[0]))
-    word_dict_rev = {v: k for k, v in word_dict.iteritems()}
+    word_dict_rev = {v: k for k, v in word_dict.items()}
     return word_dict, word_dict_rev, embedding
 
 
@@ -113,7 +104,7 @@ def load_sentiment_dictionary():
         if not line.strip() in sent_words_dict:
             sent_words_dict[line.strip()] = 4
             dec_list.append(line.strip())
-            
+
     fneg.close()
     fpos.close()
     frev.close()
@@ -125,24 +116,24 @@ def load_sentiment_dictionary():
 
 def export_aspect(domain, data_dir):
     aspect_list = list()
-    
+
     fa = codecs.open('../dictionary/' + domain + '_aspect.txt', 'w', 'utf-8')
     for file in os.listdir(data_dir):
         if not (file.endswith('.txt') and domain in file):
             continue
-            
+
         f = codecs.open(data_dir + file, 'r', 'utf-8')
         for line in f:
             for word in line.split(' '):
                 if '{as' in word:
                     aspect_list.append(word.split('{')[0].strip())
         f.close()
-            
+
     for w in sorted(set(aspect_list)):
         fa.write(w + '\n')
-    
+
     fa.close()
-    
+
     return set(aspect_list)
 
 
@@ -176,8 +167,8 @@ def change_xml_to_txt_v1(domain, data_dir):
                                                         sentence[start:end] + '{as' + polarity + '}')
                 else:
                     new_sentence = new_sentence + ' unknowntoken{as' + polarity + '}'
-                    
-            train_text.write(' '.join(re.sub(r'[.,:;/\-?!\"\n()\\]',' ', new_sentence).lower().split()) + '\n')
+
+            train_text.write(' '.join(re.sub(r'[.,:;/\-?!\"\n()\\]', ' ', new_sentence).lower().split()) + '\n')
 
         except AttributeError:
             continue
@@ -196,13 +187,13 @@ def change_xml_to_txt_v1(domain, data_dir):
                 start = int(opinion.get('from'))
                 end = int(opinion.get('to'))
                 polarity = opinion.get('polarity')
-                if (end != 0):
+                if end != 0:
                     new_sentence = new_sentence.replace(sentence[start:end],
                                                         sentence[start:end] + '{as' + polarity + '}')
                 else:
                     new_sentence = new_sentence + ' unknowntoken{as' + polarity + '}'
-                    
-            test_text.write(' '.join(re.sub(r'[.,:;/\-?!\"\n()\\]',' ', new_sentence).lower().split()) + '\n')
+
+            test_text.write(' '.join(re.sub(r'[.,:;/\-?!\"\n()\\]', ' ', new_sentence).lower().split()) + '\n')
 
         except AttributeError:
             continue
@@ -232,12 +223,13 @@ def change_xml_to_txt_v2(domain, data_dir):
                 polarity = opinion.get('polarity')
                 category = opinion.get('category')
                 target = opinion.get('target').lower()
-                if (end != 0):
-                    new_sentence = new_sentence[:bias+end] + ' ' + category + '{as' + polarity + '}' + new_sentence[bias+end:]
+                if end != 0:
+                    new_sentence = new_sentence[:bias + end] + ' ' + category + '{as' + polarity + '}' + new_sentence[
+                                                                                                         bias + end:]
                     bias = bias + len(category + '{as' + polarity + '}') + 1
                 else:
                     new_sentence = new_sentence + ' ' + category + '{as' + polarity + '}'
-            train_text.write(' '.join(re.sub(r'[.,:;/\-?!\"\n()\\]',' ', new_sentence).lower().split()) + '\n')
+            train_text.write(' '.join(re.sub(r'[.,:;/\-?!\"\n()\\]', ' ', new_sentence).lower().split()) + '\n')
 
         except AttributeError:
             continue
@@ -258,13 +250,14 @@ def change_xml_to_txt_v2(domain, data_dir):
                 end = int(opinion.get('to'))
                 polarity = opinion.get('polarity')
                 category = opinion.get('category')
-                if (end != 0):
-                    new_sentence = new_sentence[:bias+end] + ' ' + category + '{as' + polarity + '}' + new_sentence[bias+end:]
+                if end != 0:
+                    new_sentence = new_sentence[:bias + end] + ' ' + category + '{as' + polarity + '}' + new_sentence[
+                                                                                                         bias + end:]
                     bias = bias + len(category + '{as' + polarity + '}') + 1
                 else:
                     new_sentence = new_sentence + ' ' + category + '{as' + polarity + '}'
-                    
-            test_text.write(' '.join(re.sub(r'[.,:;/\-?!\"\n()\\]',' ', new_sentence).lower().split()) + '\n')
+
+            test_text.write(' '.join(re.sub(r'[.,:;/\-?!\"\n()\\]', ' ', new_sentence).lower().split()) + '\n')
 
         except AttributeError:
             continue
@@ -296,12 +289,14 @@ def change_xml_to_txt_v3(domain, data_dir):
                 polarity = opinion.get('polarity')
                 category = opinion.get('category')
                 target = opinion.get('target').lower()
-                if (end != 0):
-                    if (last_start == start and last_end == end):
-                        new_sentence = new_sentence[:bias+end+1] + category + '{as' + polarity + '}' + new_sentence[bias+end:]
+                if end != 0:
+                    if last_start == start and last_end == end:
+                        new_sentence = new_sentence[:bias + end + 1] + category + '{as' + polarity + '}' + new_sentence[
+                                                                                                           bias + end:]
                         bias = bias + len(category + '{as' + polarity + '}') + 1
                     else:
-                        new_sentence = new_sentence[:bias+start] + category + '{as' + polarity + '}' + new_sentence[bias+end:]
+                        new_sentence = new_sentence[:bias + start] + category + '{as' + polarity + '}' + new_sentence[
+                                                                                                         bias + end:]
                         bias = bias + len(category + '{as' + polarity + '}') - (end - start)
                 else:
                     new_sentence = new_sentence + ' ' + category + '{as' + polarity + '}'
@@ -309,7 +304,9 @@ def change_xml_to_txt_v3(domain, data_dir):
                 last_start = start
                 last_end = end
 
-            train_text.write((' '.join(re.sub(r'[.,:;/\-?!\"\n()\\]',' ', new_sentence).lower().split()) + '\n').replace("'service#general", "service#general").replace("}'s", "}").replace("}'", "}"))
+            train_text.write(
+                (' '.join(re.sub(r'[.,:;/\-?!\"\n()\\]', ' ', new_sentence).lower().split()) + '\n').replace(
+                    "'service#general", "service#general").replace("}'s", "}").replace("}'", "}"))
 
         except AttributeError:
             continue
@@ -333,12 +330,14 @@ def change_xml_to_txt_v3(domain, data_dir):
                 polarity = opinion.get('polarity')
                 category = opinion.get('category')
                 target = opinion.get('target').lower()
-                if (end != 0):
-                    if (last_start == start and last_end == end):
-                        new_sentence = new_sentence[:bias+end+1] + category + '{as' + polarity + '}' + new_sentence[bias+end:]
+                if end != 0:
+                    if last_start == start and last_end == end:
+                        new_sentence = new_sentence[:bias + end + 1] + category + '{as' + polarity + '}' + new_sentence[
+                                                                                                           bias + end:]
                         bias = bias + len(category + '{as' + polarity + '}') + 1
                     else:
-                        new_sentence = new_sentence[:bias+start] + category + '{as' + polarity + '}' + new_sentence[bias+end:]
+                        new_sentence = new_sentence[:bias + start] + category + '{as' + polarity + '}' + new_sentence[
+                                                                                                         bias + end:]
                         bias = bias + len(category + '{as' + polarity + '}') - (end - start)
                 else:
                     new_sentence = new_sentence + ' ' + category + '{as' + polarity + '}'
@@ -346,10 +345,13 @@ def change_xml_to_txt_v3(domain, data_dir):
                 last_start = start
                 last_end = end
 
-            test_text.write((' '.join(re.sub(r'[.,:;/\-?!\"\n()\\]',' ', new_sentence).lower().split()) + '\n').replace("'service#general", "service#general").replace("}'s", "}").replace("}'", "}"))
+            test_text.write(
+                (' '.join(re.sub(r'[.,:;/\-?!\"\n()\\]', ' ', new_sentence).lower().split()) + '\n').replace(
+                    "'service#general", "service#general").replace("}'s", "}").replace("}'", "}"))
 
         except AttributeError:
             continue
+
 
 def change_xml_to_txt_v4(domain, data_dir):
     train_filename = data_dir + domain + '_Train_Final.xml'
@@ -377,12 +379,14 @@ def change_xml_to_txt_v4(domain, data_dir):
                 polarity = opinion.get('polarity')
                 category = opinion.get('category').split('#')[0]
                 target = opinion.get('target').lower()
-                if (end != 0):
-                    if (last_start == start and last_end == end):
-                        new_sentence = new_sentence[:bias+end+1] + category + '{as' + polarity + '}' + new_sentence[bias+end:]
+                if end != 0:
+                    if last_start == start and last_end == end:
+                        new_sentence = new_sentence[:bias + end + 1] + category + '{as' + polarity + '}' + new_sentence[
+                                                                                                           bias + end:]
                         bias = bias + len(category + '{as' + polarity + '}') + 1
                     else:
-                        new_sentence = new_sentence[:bias+start] + category + '{as' + polarity + '}' + new_sentence[bias+end:]
+                        new_sentence = new_sentence[:bias + start] + category + '{as' + polarity + '}' + new_sentence[
+                                                                                                         bias + end:]
                         bias = bias + len(category + '{as' + polarity + '}') - (end - start)
                 else:
                     new_sentence = new_sentence + ' ' + category + '{as' + polarity + '}'
@@ -390,7 +394,10 @@ def change_xml_to_txt_v4(domain, data_dir):
                 last_start = start
                 last_end = end
 
-            train_text.write((' '.join(re.sub(r'[.,:;/\-?!\"\n()\\]',' ', new_sentence).lower().split()) + '\n').replace("'service", "service").replace("}'s", "}").replace("}'", "}"))
+            train_text.write(
+                (' '.join(re.sub(r'[.,:;/\-?!\"\n()\\]', ' ', new_sentence).lower().split()) + '\n').replace("'service",
+                                                                                                             "service").replace(
+                    "}'s", "}").replace("}'", "}"))
 
         except AttributeError:
             continue
@@ -414,12 +421,14 @@ def change_xml_to_txt_v4(domain, data_dir):
                 polarity = opinion.get('polarity')
                 category = opinion.get('category').split('#')[0]
                 target = opinion.get('target').lower()
-                if (end != 0):
-                    if (last_start == start and last_end == end):
-                        new_sentence = new_sentence[:bias+end+1] + category + '{as' + polarity + '}' + new_sentence[bias+end:]
+                if end != 0:
+                    if last_start == start and last_end == end:
+                        new_sentence = new_sentence[:bias + end + 1] + category + '{as' + polarity + '}' + new_sentence[
+                                                                                                           bias + end:]
                         bias = bias + len(category + '{as' + polarity + '}') + 1
                     else:
-                        new_sentence = new_sentence[:bias+start] + category + '{as' + polarity + '}' + new_sentence[bias+end:]
+                        new_sentence = new_sentence[:bias + start] + category + '{as' + polarity + '}' + new_sentence[
+                                                                                                         bias + end:]
                         bias = bias + len(category + '{as' + polarity + '}') - (end - start)
                 else:
                     new_sentence = new_sentence + ' ' + category + '{as' + polarity + '}'
@@ -427,10 +436,14 @@ def change_xml_to_txt_v4(domain, data_dir):
                 last_start = start
                 last_end = end
 
-            test_text.write((' '.join(re.sub(r'[.,:;/\-?!\"\n()\\]',' ', new_sentence).lower().split()) + '\n').replace("'service", "service").replace("}'s", "}").replace("}'", "}"))
+            test_text.write(
+                (' '.join(re.sub(r'[.,:;/\-?!\"\n()\\]', ' ', new_sentence).lower().split()) + '\n').replace("'service",
+                                                                                                             "service").replace(
+                    "}'s", "}").replace("}'", "}"))
 
         except AttributeError:
             continue
+
 
 def change_xml_to_txt_v5(domain, data_dir):
     train_filename = data_dir + domain + '_Train_Final.xml'
@@ -458,12 +471,14 @@ def change_xml_to_txt_v5(domain, data_dir):
                 polarity = opinion.get('polarity')
                 category = opinion.get('category').replace('STYLE_OPTIONS', 'style').split('#')[1]
                 target = opinion.get('target').lower()
-                if (end != 0):
-                    if (last_start == start and last_end == end):
-                        new_sentence = new_sentence[:bias+end+1] + category + '{as' + polarity + '}' + new_sentence[bias+end:]
+                if end != 0:
+                    if last_start == start and last_end == end:
+                        new_sentence = new_sentence[:bias + end + 1] + category + '{as' + polarity + '}' + new_sentence[
+                                                                                                           bias + end:]
                         bias = bias + len(category + '{as' + polarity + '}') + 1
                     else:
-                        new_sentence = new_sentence[:bias+start] + category + '{as' + polarity + '}' + new_sentence[bias+end:]
+                        new_sentence = new_sentence[:bias + start] + category + '{as' + polarity + '}' + new_sentence[
+                                                                                                         bias + end:]
                         bias = bias + len(category + '{as' + polarity + '}') - (end - start)
                 else:
                     new_sentence = new_sentence + ' ' + category + '{as' + polarity + '}'
@@ -471,7 +486,10 @@ def change_xml_to_txt_v5(domain, data_dir):
                 last_start = start
                 last_end = end
 
-            train_text.write((' '.join(re.sub(r'[.,:;/\-?!\"\n()\\]',' ', new_sentence).lower().split()) + '\n').replace("'general", "general").replace("}'s", "}").replace("}'", "}"))
+            train_text.write(
+                (' '.join(re.sub(r'[.,:;/\-?!\"\n()\\]', ' ', new_sentence).lower().split()) + '\n').replace("'general",
+                                                                                                             "general").replace(
+                    "}'s", "}").replace("}'", "}"))
 
         except AttributeError:
             continue
@@ -495,12 +513,14 @@ def change_xml_to_txt_v5(domain, data_dir):
                 polarity = opinion.get('polarity')
                 category = opinion.get('category').replace('STYLE_OPTIONS', 'style').split('#')[1]
                 target = opinion.get('target').lower()
-                if (end != 0):
-                    if (last_start == start and last_end == end):
-                        new_sentence = new_sentence[:bias+end+1] + category + '{as' + polarity + '}' + new_sentence[bias+end:]
+                if end != 0:
+                    if last_start == start and last_end == end:
+                        new_sentence = new_sentence[:bias + end + 1] + category + '{as' + polarity + '}' + new_sentence[
+                                                                                                           bias + end:]
                         bias = bias + len(category + '{as' + polarity + '}') + 1
                     else:
-                        new_sentence = new_sentence[:bias+start] + category + '{as' + polarity + '}' + new_sentence[bias+end:]
+                        new_sentence = new_sentence[:bias + start] + category + '{as' + polarity + '}' + new_sentence[
+                                                                                                         bias + end:]
                         bias = bias + len(category + '{as' + polarity + '}') - (end - start)
                 else:
                     new_sentence = new_sentence + ' ' + category + '{as' + polarity + '}'
@@ -508,10 +528,14 @@ def change_xml_to_txt_v5(domain, data_dir):
                 last_start = start
                 last_end = end
 
-            test_text.write((' '.join(re.sub(r'[.,:;/\-?!\"\n()\\]',' ', new_sentence).lower().split()) + '\n').replace("'general", "general").replace("}'s", "}").replace("}'", "}"))
+            test_text.write(
+                (' '.join(re.sub(r'[.,:;/\-?!\"\n()\\]', ' ', new_sentence).lower().split()) + '\n').replace("'general",
+                                                                                                             "general").replace(
+                    "}'s", "}").replace("}'", "}"))
 
         except AttributeError:
             continue
+
 
 def change_xml_to_txt_2014(domain, data_dir):
     train_filename = data_dir + domain + '_Train_Final.xml'
@@ -534,16 +558,18 @@ def change_xml_to_txt_2014(domain, data_dir):
                 start = int(opinion.get('from'))
                 end = int(opinion.get('to'))
                 polarity = opinion.get('polarity')
-                term = re.sub(r'[.,:;/?!\"\n()\\]',' ', opinion.get('term').lower()).strip() 
+                term = re.sub(r'[.,:;/?!\"\n()\\]', ' ', opinion.get('term').lower()).strip()
                 if polarity == 'conflict':
                     continue
 
-                if (end != 0):
-                    if (last_start == start and last_end == end):
-                        new_sentence = new_sentence[:bias+end+1] + term + '{as' + polarity + '}' + new_sentence[bias+end:]
+                if end != 0:
+                    if last_start == start and last_end == end:
+                        new_sentence = new_sentence[:bias + end + 1] + term + '{as' + polarity + '}' + new_sentence[
+                                                                                                       bias + end:]
                         bias = bias + len(term + '{as' + polarity + '}') + 1
                     else:
-                        new_sentence = new_sentence[:bias+start] + term + '{as' + polarity + '}' + new_sentence[bias+end:]
+                        new_sentence = new_sentence[:bias + start] + term + '{as' + polarity + '}' + new_sentence[
+                                                                                                     bias + end:]
                         bias = bias + len(term + '{as' + polarity + '}') - (end - start)
                 else:
                     new_sentence = new_sentence + ' ' + term + '{as' + polarity + '}'
@@ -551,13 +577,14 @@ def change_xml_to_txt_2014(domain, data_dir):
                 last_start = start
                 last_end = end
 
-            train_text.write((' '.join(re.sub(r'[.,:;/\-?!\"\n()\\]',' ', new_sentence).lower().split()) + '\n').replace(
-                "'bar", "bar").replace(
-                "}'s", "}").replace(
-                "}'", "}").replace(
-                "'pub", "pub").replace(
-                "'perks", "perks").replace(
-                "'kamasutra", "kamasutra"))
+            train_text.write(
+                (' '.join(re.sub(r'[.,:;/\-?!\"\n()\\]', ' ', new_sentence).lower().split()) + '\n').replace(
+                    "'bar", "bar").replace(
+                    "}'s", "}").replace(
+                    "}'", "}").replace(
+                    "'pub", "pub").replace(
+                    "'perks", "perks").replace(
+                    "'kamasutra", "kamasutra"))
 
         except AttributeError:
             continue
@@ -576,31 +603,37 @@ def change_xml_to_txt_2014(domain, data_dir):
                 start = int(opinion.get('from'))
                 end = int(opinion.get('to'))
                 polarity = opinion.get('polarity')
-                term = re.sub(r'[.,:;/?!\"\n()\\]',' ', opinion.get('term').lower()).strip()
+                term = re.sub(r'[.,:;/?!\"\n()\\]', ' ', opinion.get('term').lower()).strip()
                 if polarity == 'conflict':
                     continue
 
-                if (end != 0):
-                    if (last_start == start and last_end == end):
-                        new_sentence = new_sentence[:bias+end+1] + term + '{as' + polarity + '}' + new_sentence[bias+end:]
+                if end != 0:
+                    if last_start == start and last_end == end:
+                        new_sentence = new_sentence[:bias + end + 1] + term + '{as' + polarity + '}' + new_sentence[
+                                                                                                       bias + end:]
                         bias = bias + len(term + '{as' + polarity + '}') + 1
                     else:
-                        new_sentence = new_sentence[:bias+start] + term + '{as' + polarity + '}' + new_sentence[bias+end:]
+                        new_sentence = new_sentence[:bias + start] + term + '{as' + polarity + '}' + new_sentence[
+                                                                                                     bias + end:]
                         bias = bias + len(term + '{as' + polarity + '}') - (end - start)
                 else:
                     new_sentence = new_sentence + ' ' + term + '{as' + polarity + '}'
 
                 last_start = start
                 last_end = end
-                
-            test_text.write((' '.join(re.sub(r'[.,:;/\-?!\"\n()\\]',' ', new_sentence).lower().split()) + '\n').replace("'general", "general").replace("}'s", "}").replace("}'", "}"))
+
+            test_text.write(
+                (' '.join(re.sub(r'[.,:;/\-?!\"\n()\\]', ' ', new_sentence).lower().split()) + '\n').replace("'general",
+                                                                                                             "general").replace(
+                    "}'s", "}").replace("}'", "}"))
 
         except AttributeError:
             continue
 
+
 def load_data(domain, data_dir, flag_word2vec, label_dict, seq_max_len, flag_addition_corpus,
-            flag_change_xml_to_txt, negative_weight, positive_weight, neutral_weight, 
-            flag_use_sentiment_embedding):
+              flag_change_xml_to_txt, negative_weight, positive_weight, neutral_weight,
+              flag_use_sentiment_embedding):
     train_data = list()
     train_mask = list()
     train_binary_mask = list()
@@ -617,13 +650,14 @@ def load_data(domain, data_dir, flag_word2vec, label_dict, seq_max_len, flag_add
     count_neg = 0
     count_neu = 0
 
-    if (flag_change_xml_to_txt):
+    if flag_change_xml_to_txt:
         change_xml_to_txt_2014(domain, data_dir)
 
     stop_words = load_stop_words()
     pos_list, neg_list, rev_list, inc_list, dec_list, sent_words_dict = load_sentiment_dictionary()
     aspect_list = export_aspect(domain, data_dir)
-    word_dict, word_dict_rev, embedding = load_embedding(domain, data_dir, flag_addition_corpus, flag_word2vec, flag_use_sentiment_embedding)
+    word_dict, word_dict_rev, embedding = load_embedding(domain, data_dir, flag_addition_corpus, flag_word2vec,
+                                                         flag_use_sentiment_embedding)
     # load data, mask, label
     for file in os.listdir(data_dir):
         if not (file.endswith('.txt') and domain in file):
@@ -640,35 +674,35 @@ def load_data(domain, data_dir, flag_word2vec, label_dict, seq_max_len, flag_add
 
             words = line.strip().split(' ')
             for word in words:
-                if (word in stop_words):
+                if word in stop_words:
                     continue
                 word_clean = word.replace('{aspositive}', '').replace('{asnegative}', '').replace('{asneutral}', '')
 
-                if (word_clean in word_dict.keys() and count_len < seq_max_len):
-                    if (word_clean in pos_list):
+                if word_clean in word_dict.keys() and count_len < seq_max_len:
+                    if word_clean in pos_list:
                         sentiment_for_word_tmp.append(1)
-                    elif (word_clean in neg_list):
+                    elif word_clean in neg_list:
                         sentiment_for_word_tmp.append(2)
-                    elif (word_clean in rev_list):
+                    elif word_clean in rev_list:
                         sentiment_for_word_tmp.append(0)
-                    elif (word_clean in inc_list):
+                    elif word_clean in inc_list:
                         sentiment_for_word_tmp.append(0)
-                    elif (word_clean in dec_list):
+                    elif word_clean in dec_list:
                         sentiment_for_word_tmp.append(0)
                     else:
                         sentiment_for_word_tmp.append(0)
 
-                    if ('aspositive' in word):
+                    if 'aspositive' in word:
                         mask_tmp.append(positive_weight)
                         binary_mask_tmp.append(1.0)
                         label_tmp.append(label_dict['aspositive'])
                         count_pos = count_pos + 1
-                    elif ('asneutral' in word):
+                    elif 'asneutral' in word:
                         mask_tmp.append(neutral_weight)
                         binary_mask_tmp.append(1.0)
                         label_tmp.append(label_dict['asneutral'])
                         count_neu = count_neu + 1
-                    elif ('asnegative' in word):
+                    elif 'asnegative' in word:
                         mask_tmp.append(negative_weight)
                         binary_mask_tmp.append(1.0)
                         label_tmp.append(label_dict['asnegative'])
@@ -709,28 +743,28 @@ def load_data(domain, data_dir, flag_word2vec, label_dict, seq_max_len, flag_add
                 test_sentiment_for_word.append(sentiment_for_word_tmp)
         f_processed.close()
 
-    print('pos: %d' %count_pos)
-    print('neu: %d' %count_neu)
-    print('neg: %d' %count_neg)
-    print('len of train data is %d' %(len(train_data)))
-    print('len of test data is %d' %(len(test_data)))
+    print('pos: %d' % count_pos)
+    print('neu: %d' % count_neu)
+    print('neg: %d' % count_neg)
+    print('len of train data is %d' % (len(train_data)))
+    print('len of test data is %d' % (len(test_data)))
     data_sample = ''
     for id in train_data[10]:
         data_sample = data_sample + ' ' + word_dict_rev[id]
 
-    print('%s' %data_sample)
+    print('%s' % data_sample)
     print(train_data[10])
     print(train_mask[10])
     print(train_label[10])
     print(train_sentiment_for_word[10])
-    print('len of word dictionary is %d' %(len(word_dict)))
-    print('len of embedding is %d' %(len(embedding)))
-    print('len of aspect_list is %d' %(len(aspect_list)))
-    print('max sequence length is %d' %(np.max(test_seq_len)))
+    print('len of word dictionary is %d' % (len(word_dict)))
+    print('len of embedding is %d' % (len(embedding)))
+    print('len of aspect_list is %d' % (len(aspect_list)))
+    print('max sequence length is %d' % (np.max(test_seq_len)))
 
     return train_data, train_mask, train_binary_mask, train_label, train_seq_len, train_sentiment_for_word, \
-    test_data, test_mask, test_binary_mask, test_label, test_seq_len, test_sentiment_for_word, \
-    word_dict, word_dict_rev, embedding, aspect_list
+           test_data, test_mask, test_binary_mask, test_label, test_seq_len, test_sentiment_for_word, \
+           word_dict, word_dict_rev, embedding, aspect_list
 
 
 def main():
@@ -740,8 +774,8 @@ def main():
     neutral_weight = 5.0
 
     label_dict = {
-        'aspositive' : 1,
-        'asneutral' : 0,
+        'aspositive': 1,
+        'asneutral': 0,
         'asnegative': 2
     }
 
@@ -767,6 +801,7 @@ def main():
         neutral_weight,
         flag_use_sentiment_embedding
     )
+
 
 if __name__ == '__main__':
     main()
