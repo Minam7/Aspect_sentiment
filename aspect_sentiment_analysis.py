@@ -13,7 +13,7 @@ import utils as ut
 
 # Read data
 batch_size = 128
-seq_max_len = 48
+seq_max_len = 32
 nb_sentiment_label = 2
 embedding_size = 300
 nb_linear_inside = 256
@@ -107,8 +107,36 @@ def create_filtered_data(full_path):
                 if text is None:
                     text = ''
                 text, flag = put_aspect(text, pol, ut.aspects)
-                if flag:
+                if flag and len(text.split()) < seq_max_len:
                     all_comments.append(text)
+                elif flag:
+                    seen = False
+                    f_word = True
+                    temp_str = ''
+                    count_word = 0
+                    for w in text.split():
+                        if count_word < seq_max_len:
+                            if f_word:
+                                temp_str += str(w)
+                                f_word = False
+                            else:
+                                temp_str += ' ' + str(w)
+
+                            if '{as' in w:
+                                seen = True
+
+                            count_word += 1
+                        elif seen:
+                            all_comments.append(temp_str)
+                            count_word = 0
+                            seen = False
+                            f_word = True
+                            temp_str = ''
+                        else:
+                            continue
+                else:
+                    continue
+
         f = open('data/all_comments.txt', 'w')
         for cmt in all_comments:
             f.write("%s\n" % cmt)
@@ -116,7 +144,7 @@ def create_filtered_data(full_path):
 
 
 if __name__ == '__main__':
-    # create_filtered_data('data/crawled_data.cd')
+    create_filtered_data('data/crawled_data.cd')
 
     nb_sample_train = len(train_data)
 
