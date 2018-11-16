@@ -13,7 +13,7 @@ import utils as ut
 
 # Read data
 batch_size = 128
-seq_max_len = 64
+seq_max_len = 48
 nb_sentiment_label = 2
 embedding_size = 300
 nb_linear_inside = 256
