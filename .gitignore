@@ -111,6 +111,8 @@ venv.bak/
 # big data
 data/
 data/*
+fastText/
+fastText/*
 corpora/
 corpora/*
 models/
@@ -119,4 +121,6 @@ resources/
 resources/*
 files/
 .mypy_cache/
+__pycache__/
+__pycache__/*
 .DS_Store
