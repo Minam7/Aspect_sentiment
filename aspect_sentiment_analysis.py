@@ -13,8 +13,8 @@ import utils as ut
 
 # Read data
 batch_size = 128
-seq_max_len = 32
-nb_sentiment_label = 3
+seq_max_len = 64
+nb_sentiment_label = 2
 embedding_size = 300
 nb_linear_inside = 256
 nb_lstm_inside = 256
@@ -22,7 +22,7 @@ layers = 1
 TRAINING_ITERATIONS = 15000
 LEARNING_RATE = 0.1
 WEIGHT_DECAY = 0.0005
-negative_weight = 1.0
+negative_weight = 2.0
 positive_weight = 1.0
 
 label_dict = {
