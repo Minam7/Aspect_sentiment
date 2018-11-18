@@ -2,12 +2,6 @@
 # -*- coding: utf-8 -*-
 
 import codecs
-import os
-import re
-import xml.etree.ElementTree as ET
-from collections import defaultdict
-
-import numpy as np
 
 '''
 deleted aspect:

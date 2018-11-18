@@ -318,7 +318,6 @@ if __name__ == '__main__':
         print('test accuracy => %.3f' % (float(correct_prediction_test) / np.sum(train_binary_mask)))
         f_result = codecs.open('../result/result', 'w', 'utf-8')
         f_result.write('#------------------------------------------------------------------------------------------#\n')
-        f_result.write('#\t author: BinhDT\n')
         f_result.write(
             '#\t test accuracy %.2f\n' % (float(correct_prediction_test) * 100 / np.sum(np.asarray(train_mask) > 0.)))
         f_result.write(
