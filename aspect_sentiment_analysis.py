@@ -182,12 +182,16 @@ if __name__ == '__main__':
         # Creating the forward and backwards cells
         # X_train = tf.stack(X_train)
         # print(X_train.get_shape())
-        lstm_fw_cell = tf.contrib.rnn.BasicLSTMCell(nb_lstm_inside, forget_bias=1.0)
-        lstm_bw_cell = tf.contrib.rnn.BasicLSTMCell(nb_lstm_inside, forget_bias=1.0)
+        lstm_fw_cell = tf.contrib.rnn.AttentionCellWrapper(
+            tf.contrib.rnn.BasicLSTMCell(nb_lstm_inside, forget_bias=1.0), attn_length=20, state_is_tuple=True)
+        lstm_bw_cell = tf.contrib.rnn.AttentionCellWrapper(
+            tf.contrib.rnn.BasicLSTMCell(nb_lstm_inside, forget_bias=1.0), attn_length=20, state_is_tuple=True)
         # Pass lstm_fw_cell / lstm_bw_cell directly to tf.nn.bidrectional_rnn
         # if only a single layer is needed
-        lstm_fw_multicell = tf.contrib.rnn.MultiRNNCell([lstm_fw_cell] * layers)
-        lstm_bw_multicell = tf.contrib.rnn.MultiRNNCell([lstm_bw_cell] * layers)
+        lstm_fw_multicell = tf.contrib.rnn.AttentionCellWrapper(tf.contrib.rnn.MultiRNNCell([lstm_fw_cell] * layers),
+                                                                attn_length=20, state_is_tuple=True)
+        lstm_bw_multicell = tf.contrib.rnn.AttentionCellWrapper(tf.contrib.rnn.MultiRNNCell([lstm_bw_cell] * layers),
+                                                                attn_length=20, state_is_tuple=True)
         # Get lstm cell output
         outputs, _, _ = tf.contrib.rnn.static_bidirectional_rnn(lstm_fw_multicell,
                                                                 lstm_bw_multicell,
